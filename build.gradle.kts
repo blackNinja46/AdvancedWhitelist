@@ -6,7 +6,6 @@ plugins {
 }
 
 group = "live.blackninja"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -19,12 +18,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("net.dv8tion:JDA:6.1.1")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     compileOnly("com.mojang:authlib:1.5.25")
-    compileOnly("net.luckperms:api:5.4")
-    compileOnly("fr.minuskube.inv:smart-invs:1.2.7") {
-        exclude(group = "org.spigotmc", module = "spigot-api")
-    }
+    compileOnly("com.mojang:brigadier:1.0.18")
 }
 
 tasks.withType<JavaCompile>().configureEach {

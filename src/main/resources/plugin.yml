@@ -1,4 +1,14 @@
-name: Whitelist
+name: AdvancedWhitelist
 version: '1.0'
-main: live.blackninja.whitelist.Whitelist
+main: live.blackninja.whitelist.WhitelistPlugin
 api-version: '1.21'
+
+commands:
+    whitelist:
+
+permissions:
+  advancedwhitelist.admin:
+    description: Allows access to all whitelist commands.
+    default: op
+    children:
+      advancedwhitelist.request.notify: true

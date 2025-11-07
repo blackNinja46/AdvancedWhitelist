@@ -1,0 +1,5 @@
+RequestsExpiration: 10 # in minutes
+
+Discord-Bot: # The Discord Integration for Manging the Whitelist
+  Enabled: false # Enable Discord Bot
+  Token: "" # Discord Bot Token
