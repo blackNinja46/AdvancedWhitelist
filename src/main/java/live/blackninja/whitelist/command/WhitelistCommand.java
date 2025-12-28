@@ -5,7 +5,6 @@ import live.blackninja.whitelist.manager.Request;
 import live.blackninja.whitelist.manager.RequestManager;
 import live.blackninja.whitelist.manager.WhitelistManager;
 import live.blackninja.whitelist.translation.PluginTranslation;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -13,12 +12,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecutor, TabExecutor {
@@ -65,7 +63,7 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
                 String playerName = args[1];
 
-                if (!whitelistManager.existsPlayer(playerName)) {
+                if (whitelistManager.existsPlayer(playerName)) {
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.player-not-found", playerName)));
                     return true;
                 }
@@ -105,7 +103,11 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
                 sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.list.header")));
                 for (OfflinePlayer player : whitelistManager.getWhitelist()) {
-                    sender.sendMessage(translation.getComponent("command.whitelist.list.player", player.getName()));
+                    if (player == null) {
+                        continue;
+                    }
+                    String playerName = whitelistManager.getPlayerName(player);
+                    sender.sendMessage(translation.getComponent("command.whitelist.list.player", playerName));
                 }
             }
             case "requests" -> {
@@ -127,7 +129,7 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
     }
 
     @Override
-    public @NotNull List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public @NotNull List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NonNull [] args) {
         List<String> arg0 = Stream.of("add", "remove", "list", "off", "on", "toggle", "set", "requests").sorted().toList();
 
         switch (args.length) {
@@ -145,12 +147,13 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 List<String> playerList = new ArrayList<>();
 
                 for (OfflinePlayer player : this.plugin.getWhitelistManager().getWhitelist()) {
-
-                    if (player.getName() == null) {
+                    if (player == null) {
                         continue;
                     }
-
-                    playerList.add(player.getName());
+                    String playerName = this.plugin.getWhitelistManager().getPlayerName(player);
+                    if (playerName != null) {
+                        playerList.add(playerName);
+                    }
                 }
 
                 return playerList;

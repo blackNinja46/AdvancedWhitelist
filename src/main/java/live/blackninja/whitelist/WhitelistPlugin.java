@@ -10,6 +10,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import live.blackninja.whitelist.command.*;
 
+import java.util.Objects;
+
 public final class WhitelistPlugin extends JavaPlugin {
 
     public WhitelistManager whitelistManager;
@@ -22,7 +24,7 @@ public final class WhitelistPlugin extends JavaPlugin {
 
         this.saveDefaultConfig();
 
-        this.translation = new PluginTranslation();
+        this.translation = new PluginTranslation(this);
         this.whitelistManager = new WhitelistManager(this);
         this.requestManager = new RequestManager(this);
 
@@ -41,7 +43,7 @@ public final class WhitelistPlugin extends JavaPlugin {
     }
 
     public void registerCommands() {
-        this.getCommand("whitelist").setExecutor(new WhitelistCommand(this));
+        Objects.requireNonNull(this.getCommand("whitelist")).setExecutor(new WhitelistCommand(this));
     }
 
     public void registerEvents(PluginManager pluginManager) {

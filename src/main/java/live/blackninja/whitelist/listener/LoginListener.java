@@ -22,7 +22,7 @@ public record LoginListener(WhitelistPlugin plugin) implements Listener {
         RequestManager requestManager = plugin.getRequestManager();
         PluginTranslation translation = plugin.getTranslation();
 
-        if (!plugin.getWhitelistManager().isWhitelisted(username)) {
+        if (plugin.getWhitelistManager().isWhitelist() && !plugin.getWhitelistManager().isWhitelisted(username)) {
             requestManager.sendRequest(username);
 
             Request request = requestManager.getRequest(username);

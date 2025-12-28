@@ -2,16 +2,16 @@ package live.blackninja.whitelist.bot.command;
 
 import live.blackninja.whitelist.WhitelistPlugin;
 import live.blackninja.whitelist.bot.Bot;
+import live.blackninja.whitelist.manager.Request;
+import live.blackninja.whitelist.manager.RequestManager;
 import live.blackninja.whitelist.manager.WhitelistManager;
 import live.blackninja.whitelist.translation.BotTranslation;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.OfflinePlayer;
 
+import java.util.List;
 import java.util.Objects;
 
 public class WhitelistBotCommand implements SlashCommand {
@@ -29,14 +29,12 @@ public class WhitelistBotCommand implements SlashCommand {
     @Override
     public void execute() {
         WhitelistManager whitelistManager = bot.getPlugin().getWhitelistManager();
+        RequestManager requestManager = bot.getPlugin().getRequestManager();
         BotTranslation translation = bot.getTranslation();
-
-
-        User user = event.getUser();
 
         if (event.getGuild() == null) {
             event.replyEmbeds(translation.getEmbed("default.unknown_error", null)
-                    .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                    .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                     .build()).queue();
             return;
         }
@@ -45,14 +43,12 @@ public class WhitelistBotCommand implements SlashCommand {
 
         if (member == null) {
             event.replyEmbeds(translation.getEmbed("default.unknown_error", null)
-                    .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                    .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                     .build()).setEphemeral(true).queue();
             return;
         }
 
-        Guild guild = member.getGuild();
-
-        if (!member.hasPermission(Permission.MANAGE_SERVER)) {
+        if (!member.hasPermission(Permission.ADMINISTRATOR)) {
             event.replyEmbeds(translation.getEmbed("command.no_permission", event.getUserLocale().toLocale())
                     .setAuthor(member.getEffectiveName(), null, member.getEffectiveAvatarUrl())
                     .build()).setEphemeral(true).queue();
@@ -63,7 +59,7 @@ public class WhitelistBotCommand implements SlashCommand {
 
         if (subCommand == null) {
             event.replyEmbeds(translation.getEmbed("default.unknown_error", event.getUserLocale().toLocale())
-                    .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                    .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                     .build()).setEphemeral(true).queue();
             return;
         }
@@ -71,7 +67,7 @@ public class WhitelistBotCommand implements SlashCommand {
         event.deferReply(true).queue(hook -> {
             switch (subCommand.toLowerCase()) {
                 case "toggle" -> {
-                    boolean state = event.getOption("state").getAsBoolean();
+                    boolean state = Objects.requireNonNull(event.getOption("state")).getAsBoolean();
 
                     if (state) {
                         WhitelistPlugin plugin = bot.getPlugin();
@@ -79,8 +75,8 @@ public class WhitelistBotCommand implements SlashCommand {
                             boolean newState = true;
                             plugin.getWhitelistManager().toggleWhitelist(newState);
                         });
-                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.enable.description", event.getUserLocale().toLocale())
-                                .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.enable", event.getUserLocale().toLocale())
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                                 .build()).queue();
                         return;
                     }
@@ -89,13 +85,87 @@ public class WhitelistBotCommand implements SlashCommand {
                         boolean newState = false;
                         plugin.getWhitelistManager().toggleWhitelist(newState);
                     });
-                    hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.disable.description", event.getUserLocale().toLocale())
-                            .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                    hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.disable", event.getUserLocale().toLocale())
+                            .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                             .build()).queue();
 
                 }
+                case "add" -> {
+                    String playerName = Objects.requireNonNull(event.getOption("player")).getAsString();
+
+                    if (whitelistManager.existsPlayer(playerName)) {
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.not-found", event.getUserLocale().toLocale(), playerName)
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                .build()).queue();
+                        return;
+                    }
+
+                    WhitelistPlugin plugin = bot.getPlugin();
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (whitelistManager.whitelistPlayer(playerName)) {
+                            if (requestManager.hasOpenRequest(playerName)) {
+                                requestManager.removeRequest(playerName);
+                            }
+                            hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.add", event.getUserLocale().toLocale(), playerName)
+                                    .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                    .build()).queue();
+                            return;
+                        }
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.already-whitelisted", event.getUserLocale().toLocale(), playerName)
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                .build()).queue();
+                    });
+                }
+                case "remove" -> {
+                    String playerName = Objects.requireNonNull(event.getOption("player")).getAsString();
+
+                    WhitelistPlugin plugin = bot.getPlugin();
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (whitelistManager.unWhitelistPlayer(playerName)) {
+                            hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.remove", event.getUserLocale().toLocale(), playerName)
+                                    .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                    .build()).queue();
+                            return;
+                        }
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.not-whitelisted", event.getUserLocale().toLocale(), playerName)
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                .build()).queue();
+                    });
+                }
+                case "list" -> {
+                    List<OfflinePlayer> whitelist = whitelistManager.getWhitelist();
+
+                    if (whitelist.isEmpty()) {
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.list-empty", event.getUserLocale().toLocale())
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                .build()).queue();
+                        return;
+                    }
+
+                    String playerList = String.join(", ", whitelist.stream().map(OfflinePlayer::getName).toList());
+
+                    hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.list", event.getUserLocale().toLocale(), whitelist.size(), playerList)
+                            .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                            .build()).queue();
+                }
+                case "requests" -> {
+                    List<Request> requests = requestManager.getRequests();
+
+                    if (requests.isEmpty()) {
+                        hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.requests.empty", event.getUserLocale().toLocale())
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                                .build()).queue();
+                        return;
+                    }
+
+                    String requestsList = String.join(", ", requests.stream().map(Request::getPlayer).toList());
+
+                    hook.editOriginalEmbeds(translation.getEmbed("command.whitelist.requests", event.getUserLocale().toLocale(), requests.size(), requestsList)
+                            .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
+                            .build()).queue();
+                }
                 default -> hook.editOriginalEmbeds(translation.getEmbed("default.unknown_error", event.getUserLocale().toLocale())
-                        .setAuthor(user.getName(), null, user.getEffectiveAvatarUrl())
+                                .setTitle(translation.get("command.whitelist.title", event.getUserLocale().toLocale()))
                         .build()).queue();
             }
         });

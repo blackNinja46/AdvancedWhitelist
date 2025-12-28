@@ -4,9 +4,7 @@ import live.blackninja.whitelist.WhitelistPlugin;
 import live.blackninja.whitelist.api.UserAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
@@ -59,9 +57,9 @@ public class WhitelistManager {
     public boolean existsPlayer(String player) {
         try {
             getPlayerByName(player);
-            return true;
-        }catch (Exception e){
             return false;
+        }catch (Exception e){
+            return true;
         }
     }
 
@@ -74,6 +72,22 @@ public class WhitelistManager {
             throw new RuntimeException(e);
         }
         return offlinePlayer;
+    }
+
+    public String getPlayerName(OfflinePlayer player) {
+        String name = player.getName();
+        if (name != null) {
+            return name;
+        }
+
+        // Wenn der Name null ist, hole ihn über die Mojang API
+        try {
+            CompletableFuture<String> nameFuture = UserAPI.getNameByUUID(player.getUniqueId());
+            return nameFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            // Falls die API nicht verfügbar ist, verwende die UUID als Fallback
+            return player.getUniqueId().toString();
+        }
     }
 
     public final Component getPrefix() {

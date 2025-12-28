@@ -59,6 +59,50 @@ public class UserAPI {
         return future;
     }
 
+    public static CompletableFuture<String> getNameByUUID(UUID uuid) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        // UUID ohne Bindestriche für die API
+        String uuidString = uuid.toString().replace("-", "");
+
+        Request request = new Request.Builder()
+                .url(MessageFormat.format("https://sessionserver.mojang.com/session/minecraft/profile/{0}", uuidString))
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new Exception());
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) {
+                try (ResponseBody responseBody = response.body()) {
+                    if (!response.isSuccessful() || responseBody == null) {
+                        future.completeExceptionally(new Exception());
+                        return;
+                    }
+
+                    String body = responseBody.string();
+                    JsonElement parse = JsonParser.parseString(body);
+
+                    String name = parse.getAsJsonObject().getAsJsonPrimitive("name").getAsString();
+
+                    if (name == null) {
+                        future.completeExceptionally(new Exception());
+                        return;
+                    }
+
+                    future.complete(name);
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                }
+            }
+        });
+
+        return future;
+    }
+
     private static UUID fromTrimmed(String trimmedUUID) {
         if (trimmedUUID == null) {
             return null;

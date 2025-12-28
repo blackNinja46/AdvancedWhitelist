@@ -15,8 +15,6 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import java.util.concurrent.TimeUnit;
 
-import static net.dv8tion.jda.api.requests.GatewayIntent.ALL_INTENTS;
-
 public class Bot {
 
     protected final WhitelistPlugin plugin;
@@ -30,7 +28,7 @@ public class Bot {
         this.plugin = plugin;
         this.token = token;
 
-        translation = new BotTranslation();
+        translation = new BotTranslation(this.plugin);
 
         bot = JDABuilder.createDefault(token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .setStatus(OnlineStatus.ONLINE)
