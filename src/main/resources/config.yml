@@ -1,7 +1,10 @@
+# ++ Advanced Whitelist Plugin ++
+# by blackNinja46
+
 Language: en # Supported Languages: en, de (Default: en)
 
 RequestsExpiration: 10 # in minutes (Default: 10)
 
 Discord-Bot: # The Discord Integration for Manging the Whitelist on your Discord Server
-  Enabled: true # Enable Discord Bot
-  Token: "MTQzNTk3NjMwNzcyMzg2NjI1Mg.GolyN-.iS1eaghrk04YsgkfXtaqaK7nddpG7Wg7Zo01Hk" # Discord Bot Token
+  Enabled: false # Enable Discord Bot
+  Token: "" # Discord Bot Token

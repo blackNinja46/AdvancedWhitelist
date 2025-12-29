@@ -48,7 +48,7 @@ public record LoginListener(WhitelistPlugin plugin) implements Listener {
         RequestManager requestManager = plugin.getRequestManager();
 
         List<? extends Player> admins = plugin.getServer().getOnlinePlayers().stream()
-                .filter(player -> player.hasPermission("whitelist.admin.notify"))
+                .filter(player -> player.hasPermission("advancedwhitelist.admin.notify"))
                 .toList();
         if (admins.isEmpty()) {
             long expirationTime = requestManager.getExpirationDuration(request);
