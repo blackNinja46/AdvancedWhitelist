@@ -5,6 +5,6 @@ Language: en # Supported Languages: en, de (Default: en)
 
 RequestsExpiration: 10 # in minutes (Default: 10)
 
-Discord-Bot: # The Discord Integration for Manging the Whitelist on your Discord Server
+Discord-Bot: # The Discord Integration for managing the Whitelist on your Discord Server
   Enabled: false # Enable Discord Bot
   Token: "" # Discord Bot Token
