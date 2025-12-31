@@ -28,7 +28,7 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
         RequestManager requestManager = plugin.getRequestManager();
         PluginTranslation translation = plugin.getTranslation();
 
-        if (!sender.hasPermission("whitelist.admin")) {
+        if (!this.hasPermission(sender)) {
             sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
             return true;
         }
@@ -40,14 +40,26 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
 
         switch (args[0].toLowerCase()) {
             case "on" -> {
+                if (!sender.hasPermission("advancedwhitelist.toggle")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 whitelistManager.toggleWhitelist(true);
                 sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.on")));
             }
             case "off" -> {
+                if (!sender.hasPermission("advancedwhitelist.toggle")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 whitelistManager.toggleWhitelist(false);
                 sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.off")));
             }
             case "toggle" -> {
+                if (!sender.hasPermission("advancedwhitelist.toggle")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 if (whitelistManager.isWhitelist()) {
                     whitelistManager.toggleWhitelist(false);
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.off")));
@@ -57,6 +69,10 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
             }
             case "add" -> {
+                if (!sender.hasPermission("advancedwhitelist.player")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 if (args.length < 2) {
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.usage")));
                     return true;
@@ -78,6 +94,10 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
             }
             case "remove" -> {
+                if (!sender.hasPermission("advancedwhitelist.player")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 if (args.length < 2) {
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.usage")));
                     return true;
@@ -90,6 +110,10 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
             }
             case "set" -> {
+                if (!sender.hasPermission("advancedwhitelist.player")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 this.plugin.getServer().getWhitelistedPlayers().clear();
 
                 Bukkit.getOnlinePlayers().forEach(player -> whitelistManager.whitelistPlayer(player.getName()));
@@ -97,6 +121,10 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.set")));
             }
             case "list" -> {
+                if (!sender.hasPermission("advancedwhitelist.list")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 if (whitelistManager.getWhitelist().isEmpty()) {
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.list.empty")));
                     return true;
@@ -111,6 +139,10 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 }
             }
             case "requests" -> {
+                if (!sender.hasPermission("advancedwhitelist.requests")) {
+                    sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("global.no-permission")));
+                    return true;
+                }
                 if (requestManager.getRequests().isEmpty()) {
                     sender.sendMessage(whitelistManager.getPrefix().append(translation.getComponent("command.whitelist.request-list.empty")));
                     return true;
@@ -162,5 +194,13 @@ public record WhitelistCommand(WhitelistPlugin plugin) implements CommandExecuto
                 return Collections.emptyList();
             }
         }
+    }
+
+    private boolean hasPermission(CommandSender sender) {
+        return sender.hasPermission("advancedwhitelist.admin") ||
+                sender.hasPermission("advancedwhitelist.player") ||
+                sender.hasPermission("advancedwhitelist.list") ||
+                sender.hasPermission("advancedwhitelist.requests") ||
+                sender.hasPermission("advancedwhitelist.toogle");
     }
 }

@@ -12,3 +12,7 @@ permissions:
     default: op
     children:
       advancedwhitelist.request.notify: true
+      advancedwhitelist.toggle: true
+      advancedwhitelist.player: true
+      advancedwhitelist.list: true
+      advancedwhitelist.requests: true
