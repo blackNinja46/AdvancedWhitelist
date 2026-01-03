@@ -1,7 +1,7 @@
 # Advanced Whitelist
 
 <!-- modrinth_exclude.start -->
-### - [Download on Modrinth](https://modrinth.com/plugin/advanced-whitelist) -
+### [Download on Modrinth](https://modrinth.com/plugin/advanced-whitelist)
 <!-- modrinth_exclude.end -->
 
 Like a normal whitelist, but with powerful extra features to improve your Minecraft server experience. Players can send join requests directly when trying to connect, making access management easier and more interactive.
